@@ -25,7 +25,10 @@ export class EcsStack extends cdk.Stack {
         maxCapacity: 3,
     });
 
-      const pocTaskDefinition = new ecs.Ec2TaskDefinition(this, 'PocTaskDef');
+      const pocTaskDefinition = new ecs.Ec2TaskDefinition(this, 'PocTaskDef',{
+        networkMode: ecs.NetworkMode.BRIDGE,
+        
+      })
       const pocContainer = pocTaskDefinition.addContainer('pocContainer', {
         image: ecs.ContainerImage.fromEcrRepository(props.repository),
         memoryLimitMiB: 256,
