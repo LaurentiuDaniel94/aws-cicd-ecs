@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 
 interface EcsStackProps extends cdk.StackProps {
     vpc: ec2.IVpc;
@@ -33,5 +34,45 @@ export class EcsStack extends cdk.Stack {
             streamPrefix: 'pocContainer',
             }),
       });
+
+        pocContainer.addPortMappings({
+            containerPort: 80,
+            hostPort: 80,
+            protocol: ecs.Protocol.TCP,
+        });
+
+        const pocService = new ecs.Ec2Service(this, 'PocService', {
+            cluster: pocCluster,
+            taskDefinition: pocTaskDefinition,
+        });
+
+        //create a load balancer
+        pocService.connections.allowFromAnyIpv4(ec2.Port.tcp(80));
+        pocService.connections.allowFromAnyIpv4(ec2.Port.tcp(443));
+
+        const pocLoadBalancer = new elbv2.ApplicationLoadBalancer(this, 'PocLoadBalancer', {
+            vpc: props.vpc,
+            internetFacing: true,
+        });
+
+        const listener = pocLoadBalancer.addListener('Listener', {
+            port: 80,
+            open: true
+        });
+
+        listener.addTargets('ECS', {
+            port: 80,
+            targets: [pocService.loadBalancerTarget({
+                containerName: 'pocContainer',
+                containerPort: 80,
+            })],
+            healthCheck: {
+                interval:cdk.Duration.seconds(60),
+                path: '/',
+                timeout: cdk.Duration.seconds(5),
+            }
+        });
+
+
     }
 }
