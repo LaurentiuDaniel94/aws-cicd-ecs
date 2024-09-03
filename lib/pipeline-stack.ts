@@ -26,7 +26,7 @@ export class PipelineStack extends cdk.Stack {
     const sourceAction = new codepipeline_actions.GitHubSourceAction({
       actionName: 'GitHub_Source',
       owner: 'LaurentiuDaniel94',
-      repo: 'aws-typescript',
+      repo: 'aws-cicd-ecs',
       oauthToken: cdk.SecretValue.secretsManager('GITHUB_TOKEN'),
       output: sourceOutput,
       branch: 'main', // or your preferred branch
