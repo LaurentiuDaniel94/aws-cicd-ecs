@@ -1,0 +1,12 @@
+{
+    "name": "ecs-demo-app",
+    "version": "1.0.0",
+    "description": "Simple app for ECS deployment",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "dependencies": {
+      "express": "^4.17.1"
+    }
+  }
