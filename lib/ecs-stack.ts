@@ -26,8 +26,12 @@ export class EcsStack extends cdk.Stack {
 
       const pocTaskDefinition = new ecs.Ec2TaskDefinition(this, 'PocTaskDef');
       const pocContainer = pocTaskDefinition.addContainer('pocContainer', {
-        image: 
+        image: ecs.ContainerImage.fromEcrRepository(props.repository),
         memoryLimitMiB: 256,
+        cpu: 256,
+        logging: new ecs.AwsLogDriver({
+            streamPrefix: 'pocContainer',
+            }),
       });
     }
 }
