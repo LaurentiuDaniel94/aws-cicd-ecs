@@ -15,10 +15,9 @@ const env = {
 };
 
 new ContainerRepositoryStack(app, 'ContainerRepositoryStack', {
-  env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION,
-  },
+  repositoryName: 'poc-ecs-repo',
+  maxImageCount: 5,
+  env,
 });
 
 // Create the networking stack
