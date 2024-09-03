@@ -1,11 +1,9 @@
-#!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-// import { EcsStack } from '../lib/ecs-stack';
 import { ContainerRepositoryStack } from '../lib/container-repository-stack';
 import { NetworkingStack } from '../lib/network-infrastructure-stack';
 import { EcsStack } from '../lib/ecs-stack';
-
+import { PipelineStack } from '../lib/pipeline-stack';
 
 const app = new cdk.App();
 
@@ -14,27 +12,30 @@ const env = {
   region: process.env.CDK_DEFAULT_REGION,
 };
 
-new ContainerRepositoryStack(app, 'ContainerRepositoryStack', {
+const ecrStack = new ContainerRepositoryStack(app, 'ContainerRepositoryStack', {
   repositoryName: 'poc-ecs-repo',
   maxImageCount: 5,
   env,
 });
 
-// Create the networking stack
 const networkStack = new NetworkingStack(app, 'NetworkingStack', { env });
 
-// Create the ECS stack
 const ecsStack = new EcsStack(app, 'EcsStack', {
   vpc: networkStack.pocVpc,
-  env: env,
+  repository: ecrStack.repository,
+  env,
 });
 
-// Correctly add the dependency
-ecsStack.addDependency(networkStack);
+const pipelineStack = new PipelineStack(app, 'PipelineStack', {
+  ecrRepository: ecrStack.repository,
+  ecsService: ecsStack.service,
+  env,
+});
 
-// Add tags to all resources in both stacks
-cdk.Tags.of(networkStack).add('Project', 'MyPoC');
-cdk.Tags.of(ecsStack).add('Project', 'MyPoC');
+ecsStack.addDependency(networkStack);
+ecsStack.addDependency(ecrStack);
+pipelineStack.addDependency(ecsStack);
+
+cdk.Tags.of(app).add('Project', 'MyPoC');
 
 app.synth();
-

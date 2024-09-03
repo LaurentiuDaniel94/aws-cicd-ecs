@@ -11,6 +11,8 @@ interface EcsStackProps extends cdk.StackProps {
 }
 
 export class EcsStack extends cdk.Stack {
+  public readonly service: ecs.FargateService;
+
   constructor(scope: Construct, id: string, props: EcsStackProps) {
     super(scope, id, props);
 
@@ -33,7 +35,7 @@ export class EcsStack extends cdk.Stack {
       protocol: ecs.Protocol.TCP,
     });
 
-    const service = new ecs.FargateService(this, 'DemoService', {
+    this.service = new ecs.FargateService(this, 'DemoService', {
       cluster,
       taskDefinition,
       desiredCount: 2,
@@ -50,7 +52,7 @@ export class EcsStack extends cdk.Stack {
 
     listener.addTargets('DemoTarget', {
       port: 80,
-      targets: [service],
+      targets: [this.service],
       healthCheck: {
         path: '/',
         interval: cdk.Duration.seconds(60),
